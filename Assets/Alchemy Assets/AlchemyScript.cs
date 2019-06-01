@@ -24,7 +24,8 @@ public class AlchemyScript : MonoBehaviour {
 
     List<int> pickedValues = new List<int>();
     List<int> completeSol = new List<int>();
-    int mainSymbol, correctFreq, currentStep, nowStep;
+    int mainSymbol, correctFreq, currentStep, nowStep, finalFreq;
+    bool setFinal;
     delegate bool checkLogic();
     checkLogic[] getLogic;
 
@@ -118,7 +119,7 @@ public class AlchemyScript : MonoBehaviour {
 
         if (moduleSolved) return;
 
-        if (completeSol[nowStep] != nowSymbols[symbolPressed] || (correctFreq == -1 && MainCircleText.text != "") || correctFreq != Array.IndexOf(freqNames, MainCircleText.text)) {
+        if (setFinal || completeSol[nowStep] != nowSymbols[symbolPressed] || (correctFreq == -1 && MainCircleText.text != "") || correctFreq != Array.IndexOf(freqNames, MainCircleText.text)) {
             OnReset();
         } else if (nowStep + 1 == completeSol.Count) {
             MainCircleText.text = "";
@@ -134,7 +135,17 @@ public class AlchemyScript : MonoBehaviour {
 
         if (moduleSolved) return;
 
-        if (completeSol[nowStep] != 7) {
+        if (setFinal) {
+            if (finalFreq != Array.IndexOf(freqNames, MainCircleText.text)) {
+                OnReset();
+
+                return;
+            } else {
+                BombModule.HandlePass();
+                moduleSolved = true;
+                Debug.LogFormat(@"[Alchemy #{0}] Module solved!", moduleid);
+            }
+        } else if (completeSol[nowStep] != 7) {
             OnReset();
 
             return;
@@ -142,9 +153,7 @@ public class AlchemyScript : MonoBehaviour {
 
         correctFreq = -1;
         nowStep = 0;
-        BombModule.HandlePass();
-        moduleSolved = true;
-        Debug.LogFormat(@"[Alchemy #{0}] Module solved!", moduleid);
+        setFinal = true;
     }
 
     void OnReDrawPress() {
@@ -153,7 +162,7 @@ public class AlchemyScript : MonoBehaviour {
 
         if (moduleSolved) return;
 
-        if (completeSol[nowStep] != 6 || (correctFreq == -1 && MainCircleText.text != "") || correctFreq != Array.IndexOf(freqNames, MainCircleText.text)) {
+        if (setFinal || completeSol[nowStep] != 6 || (correctFreq == -1 && MainCircleText.text != "") || correctFreq != Array.IndexOf(freqNames, MainCircleText.text)) {
             OnReset();
 
             return;
@@ -186,7 +195,7 @@ public class AlchemyScript : MonoBehaviour {
     void CheckSteps() {
         completeSol.Clear();
         nowStep = 0;
-        correctFreq = -1;
+        correctFreq = finalFreq = -1;
 
         switch (currentStep) {
             case 0:
@@ -220,7 +229,8 @@ public class AlchemyScript : MonoBehaviour {
                     currentStep = 5;
                 } else if (mainSymbol == 2) { //Otherwise, if the circle already has HEVA, go to step 5.
                     currentStep = 4;
-                } else if (mainSymbol == 0) { //Otherwise, if the circle already has CREATION, press Submit.
+                } else if (mainSymbol == 0) { //Otherwise, if the circle already has CREATION, press Submit and your final frequency is LIFE.
+                    finalFreq = 4;
                     completeSol.Add(7);
                     LogSteps();
 
@@ -299,29 +309,34 @@ public class AlchemyScript : MonoBehaviour {
                 }
                 break;
 
-            case 6: //Press TERRA and press Submit.
+            case 6: //Press TERRA and press Submit. Your final frequency is MIND.
                 completeSol.Add(5);
                 completeSol.Add(7);
+                finalFreq = 0;
                 break;
 
-            case 7: //Press CREATION and press Submit. 
+            case 7: //Press CREATION and press Submit. Your final frequency is LIFE. 
                 completeSol.Add(0);
                 completeSol.Add(7);
+                finalFreq = 4;
                 break;
 
-            case 8: //Press TERRA and press Submit.
+            case 8: //Press TERRA and press Submit. Your final frequency is MATTER.
                 completeSol.Add(5);
                 completeSol.Add(7);
+                finalFreq = 2;
                 break;
 
-            case 9: //Press CREATION and press Submit.
+            case 9: //Press CREATION and press Submit. Your final frequency is FLAMES.
                 completeSol.Add(0);
                 completeSol.Add(7);
+                finalFreq = 1;
                 break;
 
-            case 10: //Press HEVA and Submit.
+            case 10: //Press HEVA and Submit. Your final frequency is ENERGY.
                 completeSol.Add(2);
                 completeSol.Add(7);
+                finalFreq = 3;
                 break;
         }
 
@@ -330,16 +345,17 @@ public class AlchemyScript : MonoBehaviour {
 
     void LogSteps() {
         var buttonNames = new[] { "None", "Creation", "Fire", "Heva", "Meta", "Strucota", "Terra", "ReDraw", "Submit" };
-        Debug.LogFormat(@"[Alchemy #{0}] Frequency to press is {1}, button{2} to press {3} {4}", moduleid, (correctFreq != -1) ? freqNames[correctFreq] : "None", (completeSol.Count == 1) ? "" : "s", (completeSol.Count == 1) ? "is" : "are", string.Join(", ", completeSol.Select(x => buttonNames[x + 1]).ToArray()));
+        Debug.LogFormat(@"[Alchemy #{0}] Frequency to press is {1}, button{2} to press {3} {4}, your final frequency is {5}", moduleid, (correctFreq != -1) ? freqNames[correctFreq] : "None", (completeSol.Count == 1) ? "" : "s", (completeSol.Count == 1) ? "is" : "are", string.Join(", ", completeSol.Select(x => buttonNames[x + 1]).ToArray()), (finalFreq != -1) ? freqNames[finalFreq] : "None");
     }
 
     void OnReset() {
         BombModule.HandleStrike();
         Debug.LogFormat(@"[Alchemy #{0}] An strike has occurred, resetting module.", moduleid);
         MainCircleText.text = "";
-        correctFreq = -1;
+        correctFreq = finalFreq = -1;
         currentStep = nowStep = 0;
         completeSol.Clear();
+        setFinal = false;
         ReDraw();
     }
 }

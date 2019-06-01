@@ -18,6 +18,6 @@ MonoBehaviour:
     well as other changes.\n\nCreated and designed by: Juck869\r\nCoded and maintained
     by: KingSlendy\n\nmoduleID: JuckAlchemy\r\n\nManual HTML: https://ktane.timwi.de/HTML/Alchemy.html\nManual
     PDF: https://ktane.timwi.de/PDF/Alchemy.pdf"
-  version: 1.0
+  version: 1.11
   outputFolder: Build
   previewImage: {fileID: 2800000, guid: 0e6116ee2f9cd5e45bbeb1fd4a5dd194, type: 3}
